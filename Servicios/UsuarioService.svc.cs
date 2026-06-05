@@ -7,17 +7,63 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Text.RegularExpressions;
 using BC = BCrypt.Net.BCrypt;
 
 namespace ServidorAhorcado.Servicios
 {
-    // NOTA: puede usar el comando "Rename" del menú "Refactorizar" para cambiar el nombre de clase "UsuarioService" en el código, en svc y en el archivo de configuración a la vez.
-    // NOTA: para iniciar el Cliente de prueba WCF para probar este servicio, seleccione UsuarioService.svc o UsuarioService.svc.cs en el Explorador de soluciones e inicie la depuración.
     public class UsuarioService : IUsuarioService
     {
         public int ActualizarJugador(JugadorDTO datosActualizados)
         {
-            throw new NotImplementedException();
+            if (validarDatosActualizados(datosActualizados))
+            {
+                return 1;
+            }
+
+            try
+            {
+                var db = new AhorcadoEntities();
+                var jugador = db.Jugador.Find(datosActualizados.idJugador);
+
+                if (jugador != null)
+                {
+                    //No se encontró el usuario para actualizarlo
+                    return 2;
+                }
+
+                if (jugador.Usuario != datosActualizados.usuario)
+                {
+                    bool usuarioOcupado = db.Jugador.Any(j => j.Usuario == datosActualizados.usuario);
+                    if (usuarioOcupado)
+                    {
+                        //Estado 3: El nuevo usuario ya está ocupado
+                        return 3;
+                    }
+                }
+                string nuevaContrasenaHasheada = BC.HashPassword(datosActualizados.contrasena);
+
+                jugador.Usuario = datosActualizados.usuario;
+                jugador.Nombre = datosActualizados.nombre;
+                jugador.PrimerApellido = datosActualizados.primerApellido;
+                jugador.SegundoApellido = datosActualizados.segundoApellido;
+                jugador.Contrasena = nuevaContrasenaHasheada;
+                jugador.Telefono = datosActualizados.telefono;
+                jugador.FechaNacimiento = datosActualizados.fechaNacimiento;
+
+                db.SaveChanges();
+
+                return 0;
+                
+            }catch(EntityException ee)
+            {
+                Console.WriteLine(ee.Message);
+                return 4;
+            }catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return 4;
+            }
         }
 
         public int RegistrarJugador(JugadorDTO nuevoJugador)
@@ -27,17 +73,23 @@ namespace ServidorAhorcado.Servicios
                 var db = new AhorcadoEntities();
                 var jugadorExistente = db.Jugador.Any(j => j.Usuario == nuevoJugador.usuario);
 
+                if (!validarDatosActualizados(nuevoJugador))
+                {
+                    //Estado 1: Datos inválidos
+                    return 1;
+                }
+
                 if (jugadorExistente)
                 {
-                    //Estado 1, ya hay una persona registrada con ese username
-                    return 1;
+                    //Estado 2, ya hay una persona registrada con ese username
+                    return 2;
                 }
 
                 bool correoEnUso = db.Jugador.Any(j => j.Correo == nuevoJugador.correo);
                 if (correoEnUso)
                 {
-                    //Estado 2: Correo en uso
-                    return 2;
+                    //Estado 3: Correo en uso
+                    return 3;
                 }
 
                 string contrasenaHasheada = BC.HashPassword(nuevoJugador.contrasena);
@@ -62,12 +114,12 @@ namespace ServidorAhorcado.Servicios
             catch(EntityException ee)
             {
                 Console.WriteLine(ee.Message);
-                return 3;
+                return 4;
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
-                return 3;
+                return 4;
             }
         }
 
@@ -90,7 +142,6 @@ namespace ServidorAhorcado.Servicios
                     nombre = jugador.Nombre,
                     primerApellido = jugador.PrimerApellido,
                     segundoApellido = jugador.SegundoApellido,
-                    contrasena = jugador.Contrasena,
                     correo = jugador.Correo,
                     telefono = jugador.Telefono,
                     fechaNacimiento = jugador.FechaNacimiento
@@ -106,6 +157,48 @@ namespace ServidorAhorcado.Servicios
                 Console.WriteLine(e.Message);
                 return null;
             }
+        } 
+        private bool validarDatosActualizados(JugadorDTO datos)
+        {
+            bool datosCorrectos = true;
+            string patronEmail = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+
+            if (string.IsNullOrWhiteSpace(datos.nombre) || datos.nombre.Length > 255)
+            {
+                datosCorrectos = false;
+            }
+
+            if (string.IsNullOrEmpty(datos.primerApellido) || datos.primerApellido.Length > 255)
+            {
+                datosCorrectos = false;
+            }
+
+            if (string.IsNullOrEmpty(datos.segundoApellido) || datos.segundoApellido.Length > 255)
+            {
+                datosCorrectos = false;
+            }
+
+            if (string.IsNullOrEmpty(datos.telefono) || datos.telefono.Length > 15)
+            {
+                datosCorrectos = false;
+            }
+
+            if (string.IsNullOrEmpty(datos.usuario) || datos.usuario.Length > 255) 
+            {
+                datosCorrectos = false;
+            }
+
+            if (datos.fechaNacimiento > DateTime.Now)
+            {
+                datosCorrectos = false;
+            }
+
+            if (string.IsNullOrEmpty(datos.correo) || Regex.IsMatch(datos.correo, patronEmail) || datos.correo.Length > 255)
+            {
+                datosCorrectos = false;
+            }
+            return datosCorrectos;
         }
     }
+    
 }
