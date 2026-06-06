@@ -123,9 +123,9 @@ namespace ServidorAhorcado.Servicios
                             Victorias = db.Partida.Count(p => 
                             (p.EstadoId == 3 && j.IdJugador == p.JugadorBId) || (p.EstadoId == 4 && j.IdJugador == p.JugadorAId))
                         }).ToList();
-
+                        var clasificacionVictoriasOrdenada = clasificacionVictorias.OrderByDescending(c => c.Victorias);
                         int posicionVictoriasJugador = 1;
-                        foreach (var c in clasificacionVictorias)
+                        foreach (var c in clasificacionVictoriasOrdenada)
                         {
                             if (c.IdJugador == idUsuario)
                             {
