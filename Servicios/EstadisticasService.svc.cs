@@ -10,8 +10,6 @@ using System.Text;
 
 namespace ServidorAhorcado.Servicios
 {
-    // NOTA: puede usar el comando "Rename" del menú "Refactorizar" para cambiar el nombre de clase "EstadisticasService" en el código, en svc y en el archivo de configuración a la vez.
-    // NOTA: para iniciar el Cliente de prueba WCF para probar este servicio, seleccione EstadisticasService.svc o EstadisticasService.svc.cs en el Explorador de soluciones e inicie la depuración.
     public class EstadisticasService : IEstadisticasService
     {
         List<EstadisticasDTO> IEstadisticasService.ObtenerClasificacionPuntos()
@@ -61,9 +59,11 @@ namespace ServidorAhorcado.Servicios
                     (p.EstadoId == 3 && p.JugadorBId == j.IdJugador) || (p.EstadoId == 4 && p.JugadorAId == j.IdJugador))
                 }).ToList();
 
+                var clasificacionOrdenada = clasificacion.OrderByDescending(c => c.CantidadVictorias);
+
                 List<EstadisticasDTO> posiciones = new List<EstadisticasDTO>();
                 int lugar = 1;
-                foreach (var c in clasificacion)
+                foreach (var c in clasificacionOrdenada)
                 {
                     EstadisticasDTO estadisticas = new EstadisticasDTO
                     {
@@ -158,7 +158,7 @@ namespace ServidorAhorcado.Servicios
             }
         }
 
-        List<HistorialDTO> IEstadisticasService.ObtenerHistorial(int jugadorID, int idIdioma)
+        List<HistorialDTO> IEstadisticasService.ObtenerHistorial(int jugadorID)
         {
             try
             {
@@ -179,7 +179,7 @@ namespace ServidorAhorcado.Servicios
                     HistorialDTO partida = new HistorialDTO
                     {
                         palabra = obtenerPalabraEnIdiomaJugado(h.Palabra, (int)h.IdiomaId),
-                        usuarioContrincante = obtenerContrincante(h.Resultado.IdEstado, h.JugadorA, h.JugadorB, jugadorID),
+                        usuarioContrincante = obtenerContrincante(h.JugadorA, h.JugadorB, jugadorID),
                         puntos = puntosObtenidos(h.Resultado.IdEstado, jugadorID, h.JugadorA),
                         fechaPartida = (DateTime)h.FechaFin,
                         estadoPartida = h.Resultado.IdEstado
@@ -201,10 +201,10 @@ namespace ServidorAhorcado.Servicios
             }
         }
 
-        private string obtenerContrincante(int estadoPartida,Jugador jugadorA, Jugador jugadorB, int idJugador)
+        private string obtenerContrincante(Jugador jugadorA, Jugador jugadorB, int idJugador)
         {
             string contrincante = "";
-            if (estadoPartida == 4 && idJugador == jugadorA.IdJugador)
+           if(jugadorA.IdJugador == idJugador)
             {
                 contrincante = jugadorB.Usuario;
                 return contrincante;

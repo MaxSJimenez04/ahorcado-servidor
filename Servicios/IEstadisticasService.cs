@@ -22,7 +22,7 @@ namespace ServidorAhorcado.Servicios
         EstadisticasDTO ObtenerEstadisticaUsuario(int idUsuario, int puntosOrVictorias);
 
         [OperationContract]
-        List<HistorialDTO> ObtenerHistorial(int jugadorID, int idIdioma);
+        List<HistorialDTO> ObtenerHistorial(int jugadorID);
 
         
     }

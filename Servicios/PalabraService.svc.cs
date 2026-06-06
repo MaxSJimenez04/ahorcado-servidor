@@ -83,7 +83,7 @@ namespace ServidorAhorcado.Servicios
                         palabraEN = p.PalabraEN,
                         descripcionEN = p.DescripcionEN,
                         descripcionES = p.DescripcionES,
-                        CategoriaId = categoriaId
+                        categoriaId = categoriaId
                     };
 
                    listaPalabras.Add(palabra);
