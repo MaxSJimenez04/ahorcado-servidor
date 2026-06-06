@@ -12,7 +12,7 @@ namespace ServidorAhorcado.Servicios
 {
     public class PalabraService : IPalabraService
     {
-        List<CategoriaDTO> IPalabraService.obtenerCategorias()
+        List<CategoriaDTO> IPalabraService.ObtenerCategorias()
         {
             try
             {
@@ -39,7 +39,7 @@ namespace ServidorAhorcado.Servicios
             }
         }
 
-        PalabraDTO IPalabraService.obtenerDatosPalabra(int palabraID)
+        PalabraDTO IPalabraService.ObtenerDatosPalabra(int palabraID)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace ServidorAhorcado.Servicios
             }
         }
 
-        List<PalabraDTO> IPalabraService.obtenerPalabrasPorCategoria(int categoriaId)
+        List<PalabraDTO> IPalabraService.ObtenerPalabrasPorCategoria(int categoriaId)
         {
             try
             {

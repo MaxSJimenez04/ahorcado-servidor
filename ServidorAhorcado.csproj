@@ -98,6 +98,7 @@
       <DependentUpon>ModeloAhorcado.edmx</DependentUpon>
       <LastGenOutput>ModeloAhorcado.cs</LastGenOutput>
     </Content>
+    <Content Include="Servicios\EstadisticasService.svc" />
     <Content Include="Servicios\PalabraService.svc" />
     <Content Include="Servicios\SesionService.svc" />
     <Content Include="Servicios\UsuarioService.svc" />
@@ -105,6 +106,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DTO\CategoriaDTO.cs" />
+    <Compile Include="DTO\EstadisticasDTO.cs" />
+    <Compile Include="DTO\HistorialDTO.cs" />
     <Compile Include="DTO\JugadorDTO.cs" />
     <Compile Include="DTO\PalabraDTO.cs" />
     <Compile Include="Modelo\Categoria.cs">
@@ -144,6 +147,10 @@
       <DependentUpon>ModeloAhorcado.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Servicios\EstadisticasService.svc.cs">
+      <DependentUpon>EstadisticasService.svc</DependentUpon>
+    </Compile>
+    <Compile Include="Servicios\IEstadisticasService.cs" />
     <Compile Include="Servicios\IPalabraService.cs" />
     <Compile Include="Servicios\ISesionService.cs" />
     <Compile Include="Servicios\IUsuarioService.cs" />
