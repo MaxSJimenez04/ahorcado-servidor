@@ -14,12 +14,12 @@ namespace ServidorAhorcado.Servicios
     public interface IPalabraService
     {
         [OperationContract]
-        List<PalabraDTO> obtenerPalabrasPorCategoria(int categoriaId);
+        List<PalabraDTO> ObtenerPalabrasPorCategoria(int categoriaId);
 
         [OperationContract]
-        List<CategoriaDTO> obtenerCategorias();
+        List<CategoriaDTO> ObtenerCategorias();
 
         [OperationContract]
-        PalabraDTO obtenerDatosPalabra(int palabraID);
+        PalabraDTO ObtenerDatosPalabra(int palabraID);
     }
 }

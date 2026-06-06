@@ -193,7 +193,7 @@ namespace ServidorAhorcado.Servicios
                 datosCorrectos = false;
             }
 
-            if (string.IsNullOrEmpty(datos.correo) || Regex.IsMatch(datos.correo, patronEmail) || datos.correo.Length > 255)
+            if (string.IsNullOrEmpty(datos.correo) || !Regex.IsMatch(datos.correo, patronEmail) || datos.correo.Length > 255)
             {
                 datosCorrectos = false;
             }
