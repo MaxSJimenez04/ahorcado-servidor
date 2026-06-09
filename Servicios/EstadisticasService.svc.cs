@@ -163,7 +163,7 @@ namespace ServidorAhorcado.Servicios
             try
             {
                 var db = new AhorcadoEntities();
-                var historial = db.Partida.Where(p=> p.JugadorAId == jugadorID || p.JugadorBId == jugadorID).Select(p => new
+                var historial = db.Partida.Where(p => (p.JugadorAId == jugadorID || p.JugadorBId == jugadorID) && p.FechaFin != null).Select(p => new
                 {
                     p.Palabra,
                     Resultado = p.Estado,
@@ -181,7 +181,7 @@ namespace ServidorAhorcado.Servicios
                         palabra = obtenerPalabraEnIdiomaJugado(h.Palabra, (int)h.IdiomaId),
                         usuarioContrincante = obtenerContrincante(h.JugadorA, h.JugadorB, jugadorID),
                         puntos = puntosObtenidos(h.Resultado.IdEstado, jugadorID, h.JugadorA),
-                        fechaPartida = (DateTime)h.FechaFin,
+                        fechaPartida = h.FechaFin.Value,
                         estadoPartida = h.Resultado.IdEstado
                     };
 
@@ -246,6 +246,11 @@ namespace ServidorAhorcado.Servicios
             }
 
             if (idEstado == 5 && jugadorAnfitrion.IdJugador != idJugador)
+            {
+                return -3;
+            }
+
+            if (idEstado == 6 && jugadorAnfitrion.IdJugador != idJugador)
             {
                 return -3;
             }

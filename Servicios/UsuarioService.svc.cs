@@ -26,7 +26,7 @@ namespace ServidorAhorcado.Servicios
                 var db = new AhorcadoEntities();
                 var jugador = db.Jugador.Find(datosActualizados.idJugador);
 
-                if (jugador != null)
+                if (jugador == null)
                 {
                     //No se encontró el usuario para actualizarlo
                     return 2;

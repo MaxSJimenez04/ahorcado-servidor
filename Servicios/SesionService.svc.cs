@@ -1,21 +1,22 @@
 ﻿using ServidorAhorcado.DTO;
+using ServidorAhorcado.Modelo;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.Entity.Core;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
 using BC = BCrypt.Net.BCrypt;
-using ServidorAhorcado.Modelo;
-using System.Data.Common;
-using System.Data.Entity.Core;
-using System.IO;
 
 namespace ServidorAhorcado.Servicios
 {
     public class SesionService : ISesionService
     {
-        Dictionary<string, JugadorDTO> _SesionesActivas = new Dictionary<string, JugadorDTO>();
+        static ConcurrentDictionary<string, JugadorDTO> _SesionesActivas = new ConcurrentDictionary<string, JugadorDTO>();
         public KeyValuePair<int,JugadorDTO> IniciaSesion(string usuario, string contrasena)
         {
             if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(contrasena))
@@ -28,7 +29,7 @@ namespace ServidorAhorcado.Servicios
             try
             {
                 var db = new AhorcadoEntities();
-                var jugadorDB= db.Jugador.First(j => j.Usuario == usuario);
+                var jugadorDB = db.Jugador.FirstOrDefault(j => j.Usuario == usuario);
 
                 if (jugadorDB == null)
                 {
@@ -62,7 +63,7 @@ namespace ServidorAhorcado.Servicios
                     contrasena = jugadorDB.Contrasena
                 };
 
-                _SesionesActivas.Add(usuario, jugador);
+                _SesionesActivas.TryAdd(usuario, jugador);
                 //Estado 0: si se pudo iniciar sesión
                 return new KeyValuePair<int, JugadorDTO>(0, jugador);
 
