@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
 
-namespace ServidorAhorcado
+namespace ServidorAhorcado.Servicios
 {
     // Lo que el servidor le empuja al cliente
     [ServiceContract]

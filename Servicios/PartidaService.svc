@@ -1,1 +1,1 @@
-﻿<%@ ServiceHost Language="C#" Debug="true" Service="ServidorAhorcado.PartidaService" CodeBehind="PartidaService.svc.cs" %>
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="ServidorAhorcado.Servicios.PartidaService" CodeBehind="PartidaService.svc.cs" %>
