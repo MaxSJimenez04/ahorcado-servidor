@@ -430,3 +430,6 @@ FodyWeavers.xsd
 
 #Archivo de Configuración para cadenas de conexión
 connectionStrings.config
+
+#Archivos de solución
+*.sln
