@@ -16,7 +16,7 @@ namespace ServidorAhorcado.Servicios
 {
     public class SesionService : ISesionService
     {
-        static ConcurrentDictionary<string, JugadorDTO> _SesionesActivas = new ConcurrentDictionary<string, JugadorDTO>();
+        static Dictionary<string, JugadorDTO> _SesionesActivas = new Dictionary<string, JugadorDTO>();
         public KeyValuePair<int,JugadorDTO> IniciaSesion(string usuario, string contrasena)
         {
             if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(contrasena))
@@ -63,7 +63,7 @@ namespace ServidorAhorcado.Servicios
                     contrasena = jugadorDB.Contrasena
                 };
 
-                _SesionesActivas.TryAdd(usuario, jugador);
+                _SesionesActivas.Add(usuario, jugador);
                 //Estado 0: si se pudo iniciar sesión
                 return new KeyValuePair<int, JugadorDTO>(0, jugador);
 
