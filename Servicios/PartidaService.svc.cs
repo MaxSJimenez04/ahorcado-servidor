@@ -249,11 +249,42 @@ namespace ServidorAhorcado.Servicios
                 if (!GestorPartidas.TryObtenerPartida(idPartida, out PartidaDTO partida))
                     return;
 
+                // Si la partida está En espera (nadie se ha unido), solo se cancela sin penalización
+                if (partida.estadoId == 1)
+                {
+                    CancelarPartidaEnEspera(idPartida, partida);
+                    return;
+                }
+
+                // Partida en curso: sí aplica penalización
                 // Estado 5: abandonó el creador (JugadorA)
                 // Estado 6: abandonó el adivinador (JugadorB)
                 int estadoFinal = idJugador == partida.idJugadorA ? 5 : 6;
 
                 FinalizarPartida(idPartida, partida, estadoFinal);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private void CancelarPartidaEnEspera(int idPartida, PartidaDTO partida)
+        {
+            try
+            {
+                var db = new AhorcadoEntities();
+                Partida partidaDB = db.Partida.Find(idPartida);
+
+                if (partidaDB != null)
+                {
+                    db.Partida.Remove(partidaDB);
+                    db.SaveChanges();
+                }
+
+                // Limpiar callback y memoria
+                CallbackManager.EliminarCallback(partida.idJugadorA);
+                GestorPartidas.EliminarPartida(idPartida);
             }
             catch (Exception e)
             {
