@@ -245,7 +245,7 @@ namespace ServidorAhorcado.Servicios
                 return 5;
             }
 
-            if (idEstado == 5 && jugadorAnfitrion.IdJugador != idJugador)
+            if (idEstado == 5 && jugadorAnfitrion.IdJugador == idJugador)
             {
                 return -3;
             }
