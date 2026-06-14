@@ -16,7 +16,7 @@ namespace ServidorAhorcado.Servicios
     {
         public int ActualizarJugador(JugadorDTO datosActualizados)
         {
-            if (validarDatosActualizados(datosActualizados))
+            if (!validarDatosActualizados(datosActualizados))
             {
                 return 1;
             }
