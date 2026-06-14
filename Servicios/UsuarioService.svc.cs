@@ -128,7 +128,7 @@ namespace ServidorAhorcado.Servicios
             try
             {
                 var db = new AhorcadoEntities();
-                var jugador = db.Jugador.First(j => j.Usuario == usuario);
+                var jugador = db.Jugador.FirstOrDefault(j => j.Usuario == usuario);
 
                 if (jugador == null)
                 {

@@ -14,6 +14,9 @@ namespace ServidorAhorcado.Servicios
     {
         [OperationContract]
         KeyValuePair<int, JugadorDTO> IniciaSesion(string usuario, string contrasena);
+
+        [OperationContract]
+        void CerrarSesion(string usuario);
     }
 
     
