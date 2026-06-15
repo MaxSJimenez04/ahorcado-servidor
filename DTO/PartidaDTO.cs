@@ -47,5 +47,11 @@ namespace ServidorAhorcado.DTO
 
         [DataMember]
         public int estadoId { get; set; }
+
+        [DataMember]
+        public char letraPendiente { get; set; }
+
+        [DataMember]
+        public bool hayLetraPendiente { get; set; }
     }
 }

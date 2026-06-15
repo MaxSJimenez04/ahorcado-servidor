@@ -16,9 +16,17 @@ namespace ServidorAhorcado.Servicios
         [OperationContract(IsOneWay = true)]
         void NotificarJugadorUnido(string usuarioJugadorB);
 
-        // Le avisa a ambos jugadores el resultado de una letra propuesta
+        // NUEVO: avisa SOLO al Jugador A (juez) que hay una letra por juzgar
+        [OperationContract(IsOneWay = true)]
+        void NotificarLetraParaJuzgar(char letra);
+
+        // avisa a AMBOS el resultado YA confirmado
         [OperationContract(IsOneWay = true)]
         void NotificarLetraPropuesta(char letra, bool esCorrecta, char[] progresoPalabra, int intentosFallidos);
+
+        // NUEVO: avisa SOLO al juez que se equivocó en el veredicto
+        [OperationContract(IsOneWay = true)]
+        void NotificarErrorJuicio(char letra, bool eraCorrecta);
 
         // Le avisa a ambos jugadores que la partida terminó
         [OperationContract(IsOneWay = true)]
@@ -41,9 +49,13 @@ namespace ServidorAhorcado.Servicios
         [OperationContract]
         PartidaDTO UnirseAPartida(int idPartida, int idJugador);
 
-        // Jugador B propone una letra → el servidor notifica a ambos vía callback
+        // MODIFICADO: ya no evalúa, solo reenvía la letra al juez
         [OperationContract]
         void ProponerLetra(int idPartida, int idJugador, char letra);
+
+        // NUEVO: el juez (Jugador A) envía su veredicto
+        [OperationContract]
+        void JuzgarLetra(int idPartida, int idJugador, bool decisionEsCorrecta);
 
         // Cualquiera de los dos abandona → el servidor notifica al otro vía callback
         [OperationContract]

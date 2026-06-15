@@ -196,44 +196,23 @@ namespace ServidorAhorcado.Servicios
                 if (!GestorPartidas.TryObtenerPartida(idPartida, out PartidaDTO partida))
                     return;
 
-                // Evitar letras ya usadas
                 char letraMayuscula = char.ToUpper(letra);
+
+                // Evitar letras ya usadas
                 if (partida.letrasUsadas.Contains(letraMayuscula))
                     return;
 
-                partida.letrasUsadas.Add(letraMayuscula);
+                // Evitar proponer otra mientras una está en juicio
+                if (partida.hayLetraPendiente)
+                    return;
 
-                // Verificar si la letra está en la palabra
-                string palabraUpper = partida.palabraObjetivo.ToUpper();
-                bool esCorrecta = palabraUpper.Contains(letraMayuscula);
+                // Guardar la letra como pendiente y avisar SOLO al juez (Jugador A)
+                partida.letraPendiente = letraMayuscula;
+                partida.hayLetraPendiente = true;
 
-                if (esCorrecta)
+                if (CallbackManager.TryObtenerCallback(partida.idJugadorA, out var cbA))
                 {
-                    // Revelar la letra en todas sus posiciones
-                    for (int i = 0; i < palabraUpper.Length; i++)
-                    {
-                        if (palabraUpper[i] == letraMayuscula)
-                        {
-                            partida.progresoPalabra[i] = partida.palabraObjetivo[i];
-                        }
-                    }
-                }
-                else
-                {
-                    partida.intentosFallidos++;
-                }
-
-                // Notificar a ambos jugadores
-                NotificarAmbos(partida, letraMayuscula, esCorrecta);
-
-                // Verificar condiciones de fin
-                bool palabraCompleta = !partida.progresoPalabra.Contains('_');
-                bool ahorcadoCompleto = partida.intentosFallidos >= 6;
-
-                if (palabraCompleta || ahorcadoCompleto)
-                {
-                    int estadoFinal = palabraCompleta ? 3 : 4;
-                    FinalizarPartida(idPartida, partida, estadoFinal);
+                    cbA.NotificarLetraParaJuzgar(letraMayuscula);
                 }
             }
             catch (Exception e)
@@ -285,6 +264,75 @@ namespace ServidorAhorcado.Servicios
                 // Limpiar callback y memoria
                 CallbackManager.EliminarCallback(partida.idJugadorA);
                 GestorPartidas.EliminarPartida(idPartida);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public void JuzgarLetra(int idPartida, int idJugador, bool decisionEsCorrecta)
+        {
+            try
+            {
+                if (!GestorPartidas.TryObtenerPartida(idPartida, out PartidaDTO partida))
+                    return;
+
+                // Solo el Jugador A (juez) puede juzgar
+                if (idJugador != partida.idJugadorA)
+                    return;
+
+                // Debe haber una letra esperando veredicto
+                if (!partida.hayLetraPendiente)
+                    return;
+
+                char letra = partida.letraPendiente;
+                string palabraUpper = partida.palabraObjetivo.ToUpper();
+                bool esRealmenteCorrecta = palabraUpper.Contains(letra);
+
+                // ANTI-TRAMPA: el servidor valida el veredicto del juez
+                if (decisionEsCorrecta != esRealmenteCorrecta)
+                {
+                    // El juez se equivocó: avisarle SOLO a él y NO avanzar
+                    if (CallbackManager.TryObtenerCallback(partida.idJugadorA, out var cbError))
+                    {
+                        cbError.NotificarErrorJuicio(letra, esRealmenteCorrecta);
+                    }
+                    return; // la letra sigue pendiente para que vuelva a juzgar
+                }
+
+                // El veredicto fue correcto: ahora sí se procesa la letra
+                partida.letrasUsadas.Add(letra);
+
+                if (esRealmenteCorrecta)
+                {
+                    for (int i = 0; i < palabraUpper.Length; i++)
+                    {
+                        if (palabraUpper[i] == letra)
+                            partida.progresoPalabra[i] = partida.palabraObjetivo[i];
+                    }
+                }
+                else
+                {
+                    partida.intentosFallidos++;
+                }
+
+                // Limpiar la letra pendiente
+                partida.hayLetraPendiente = false;
+                partida.letraPendiente = '\0';
+
+                // Ahora sí notificar a AMBOS el resultado confirmado
+                NotificarAmbos(partida, letra, esRealmenteCorrecta);
+
+                // Verificar condiciones de fin
+                bool palabraCompleta = !partida.progresoPalabra.Contains('_');
+                bool ahorcadoCompleto = partida.intentosFallidos >= 6;
+
+                if (palabraCompleta || ahorcadoCompleto)
+                {
+                    int estadoFinal = palabraCompleta ? 3 : 4;
+                    FinalizarPartida(idPartida, partida, estadoFinal);
+                }
             }
             catch (Exception e)
             {
