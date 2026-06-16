@@ -135,14 +135,12 @@ namespace ServidorAhorcado.Servicios
             {
                 var db = new AhorcadoEntities();
 
-                // Verificar que la partida sigue disponible
                 Partida partida = db.Partida.Find(idPartida);
                 if (partida == null || partida.EstadoId != 1)
                 {
                     return null;
                 }
 
-                // Verificar que no sea el mismo jugador que creó la partida
                 if (partida.JugadorAId == idJugador)
                 {
                     return null;
@@ -150,12 +148,10 @@ namespace ServidorAhorcado.Servicios
 
                 Jugador jugadorB = db.Jugador.Find(idJugador);
 
-                // Actualizar BD: asignar Jugador B y cambiar estado a En curso
                 partida.JugadorBId = idJugador;
                 partida.EstadoId = 2;
                 db.SaveChanges();
 
-                // Actualizar estado en memoria
                 if (!GestorPartidas.TryObtenerPartida(idPartida, out PartidaDTO partidaMemoria))
                 {
                     return null;
@@ -169,13 +165,31 @@ namespace ServidorAhorcado.Servicios
                 var callback = OperationContext.Current.GetCallbackChannel<IPartidaCallback>();
                 CallbackManager.RegistrarCallback(idJugador, callback);
 
-                // Notificar al Jugador A que el Jugador B se unió
+                // Notificar al Jugador A (juez) con el DTO COMPLETO (él sí ve la palabra)
                 if (CallbackManager.TryObtenerCallback(partidaMemoria.idJugadorA, out var callbackJugadorA))
                 {
-                    callbackJugadorA.NotificarJugadorUnido(jugadorB.Usuario);
+                    callbackJugadorA.NotificarJugadorUnido(partidaMemoria);
                 }
 
-                return partidaMemoria;
+                // Al Jugador B se le devuelve una COPIA SIN la palabra (anti-trampa)
+                PartidaDTO partidaParaB = new PartidaDTO
+                {
+                    idPartida = partidaMemoria.idPartida,
+                    nombrePartida = partidaMemoria.nombrePartida,
+                    idJugadorA = partidaMemoria.idJugadorA,
+                    usuarioJugadorA = partidaMemoria.usuarioJugadorA,
+                    idJugadorB = partidaMemoria.idJugadorB,
+                    usuarioJugadorB = partidaMemoria.usuarioJugadorB,
+                    palabraObjetivo = null,                          // ← oculta para el Jugador B
+                    descripcionPalabra = partidaMemoria.descripcionPalabra, // la pista sí la ve
+                    progresoPalabra = partidaMemoria.progresoPalabra,       // los guiones vacíos
+                    letrasUsadas = partidaMemoria.letrasUsadas,
+                    intentosFallidos = partidaMemoria.intentosFallidos,
+                    idIdioma = partidaMemoria.idIdioma,
+                    estadoId = partidaMemoria.estadoId
+                };
+
+                return partidaParaB;
             }
             catch (EntityException ee)
             {

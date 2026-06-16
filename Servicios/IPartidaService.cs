@@ -14,7 +14,7 @@ namespace ServidorAhorcado.Servicios
     {
         // Le avisa al Jugador A que el Jugador B se unió
         [OperationContract(IsOneWay = true)]
-        void NotificarJugadorUnido(string usuarioJugadorB);
+        void NotificarJugadorUnido(PartidaDTO partida);
 
         // NUEVO: avisa SOLO al Jugador A (juez) que hay una letra por juzgar
         [OperationContract(IsOneWay = true)]
