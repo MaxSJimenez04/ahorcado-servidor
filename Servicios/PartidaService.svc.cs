@@ -47,7 +47,8 @@ namespace ServidorAhorcado.Servicios
                 // Obtener la palabra para guardarla en memoria
                 Palabra palabraDB = db.Palabra.Find(idPalabra);
                 Jugador jugadorDB = db.Jugador.Find(idJugador);
-
+                Categoria categoriaDB = db.Categoria.Find(palabraDB.CategoriaId);
+                string nombreCategoria = idIdioma == 1 ? categoriaDB.CategoriaES : categoriaDB.CategoriaEN;
                 string palabraObjetivo = idIdioma == 1 ? palabraDB.PalabraES : palabraDB.PalabraEN;
                 string descripcion = idIdioma == 1 ? palabraDB.DescripcionES : palabraDB.DescripcionEN;
 
@@ -64,6 +65,7 @@ namespace ServidorAhorcado.Servicios
                     letrasUsadas = new List<char>(),
                     intentosFallidos = 0,
                     idIdioma = idIdioma,
+                    categoriaPalabra = nombreCategoria,
                     estadoId = 1
                 };
 
@@ -186,6 +188,7 @@ namespace ServidorAhorcado.Servicios
                     letrasUsadas = partidaMemoria.letrasUsadas,
                     intentosFallidos = partidaMemoria.intentosFallidos,
                     idIdioma = partidaMemoria.idIdioma,
+                    categoriaPalabra = partidaMemoria.categoriaPalabra,
                     estadoId = partidaMemoria.estadoId
                 };
 

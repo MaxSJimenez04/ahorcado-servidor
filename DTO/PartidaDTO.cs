@@ -53,5 +53,8 @@ namespace ServidorAhorcado.DTO
 
         [DataMember]
         public bool hayLetraPendiente { get; set; }
+
+        [DataMember]
+        public string categoriaPalabra { get; set; }
     }
 }
