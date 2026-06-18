@@ -144,7 +144,8 @@ namespace ServidorAhorcado.Servicios
                     segundoApellido = jugador.SegundoApellido,
                     correo = jugador.Correo,
                     telefono = jugador.Telefono,
-                    fechaNacimiento = jugador.FechaNacimiento
+                    fechaNacimiento = jugador.FechaNacimiento,
+                    puntos = jugador.Puntos,
                 };
                 return datosJugador;
             }

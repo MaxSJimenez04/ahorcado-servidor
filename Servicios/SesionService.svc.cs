@@ -60,7 +60,8 @@ namespace ServidorAhorcado.Servicios
                     correo = jugadorDB.Correo,
                     telefono = jugadorDB.Telefono,
                     fechaNacimiento = jugadorDB.FechaNacimiento,
-                    contrasena = jugadorDB.Contrasena
+                    contrasena = jugadorDB.Contrasena,
+                    puntos = jugadorDB.Puntos
                 };
 
                 _SesionesActivas.TryAdd(usuario, jugador);
