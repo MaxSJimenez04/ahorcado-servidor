@@ -49,12 +49,12 @@ namespace ServidorAhorcado.Servicios
         [OperationContract]
         PartidaDTO UnirseAPartida(int idPartida, int idJugador);
 
-        // MODIFICADO: ya no evalúa, solo reenvía la letra al juez
-        [OperationContract]
+        // MODIFICADO: Agregamos IsOneWay = true para no bloquear al cliente
+        [OperationContract(IsOneWay = true)]
         void ProponerLetra(int idPartida, int idJugador, char letra);
 
-        // NUEVO: el juez (Jugador A) envía su veredicto
-        [OperationContract]
+        // MODIFICADO: Agregamos IsOneWay = true para evitar el Deadlock del juez
+        [OperationContract(IsOneWay = true)]
         void JuzgarLetra(int idPartida, int idJugador, bool decisionEsCorrecta);
 
         // Cualquiera de los dos abandona → el servidor notifica al otro vía callback
