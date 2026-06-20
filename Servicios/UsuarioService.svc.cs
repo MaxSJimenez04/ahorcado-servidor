@@ -28,7 +28,6 @@ namespace ServidorAhorcado.Servicios
 
                 if (jugador == null)
                 {
-                    //No se encontró el usuario para actualizarlo
                     return 2;
                 }
 
@@ -37,7 +36,6 @@ namespace ServidorAhorcado.Servicios
                     bool usuarioOcupado = db.Jugador.Any(j => j.Usuario == datosActualizados.usuario);
                     if (usuarioOcupado)
                     {
-                        //Estado 3: El nuevo usuario ya está ocupado
                         return 3;
                     }
                 }
@@ -75,20 +73,17 @@ namespace ServidorAhorcado.Servicios
 
                 if (!validarDatosActualizados(nuevoJugador))
                 {
-                    //Estado 1: Datos inválidos
                     return 1;
                 }
 
                 if (jugadorExistente)
                 {
-                    //Estado 2, ya hay una persona registrada con ese username
                     return 2;
                 }
 
                 bool correoEnUso = db.Jugador.Any(j => j.Correo == nuevoJugador.correo);
                 if (correoEnUso)
                 {
-                    //Estado 3: Correo en uso
                     return 3;
                 }
 

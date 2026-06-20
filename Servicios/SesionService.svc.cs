@@ -22,7 +22,6 @@ namespace ServidorAhorcado.Servicios
             if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(contrasena))
             {
 
-                //Estado 1: No se recibió usuario o contraseña
                 return new KeyValuePair<int, JugadorDTO>(1, null);
             }
 
@@ -33,7 +32,7 @@ namespace ServidorAhorcado.Servicios
 
                 if (jugadorDB == null)
                 {
-                    //Estado 2: No se encontró el usuario
+
                     return new KeyValuePair<int, JugadorDTO>(2, null);
                 }
 
@@ -41,13 +40,11 @@ namespace ServidorAhorcado.Servicios
 
                 if (!esContrasenaCorrecta)
                 {
-                    //Estado 2 de nuevo por que no se encontró la contraseña
                     return new KeyValuePair<int, JugadorDTO>(2, null);
                 }
 
                 if (_SesionesActivas.ContainsKey(usuario))
                 {
-                    //Estado 3: Ya hay una sesión activa para el usuario
                     return new KeyValuePair<int, JugadorDTO>(3, null);
                 }
 
@@ -65,18 +62,15 @@ namespace ServidorAhorcado.Servicios
                 };
 
                 _SesionesActivas.TryAdd(usuario, jugador);
-                //Estado 0: si se pudo iniciar sesión
                 return new KeyValuePair<int, JugadorDTO>(0, jugador);
 
             }
             catch(EntityException ee)
             {
-                //Error en la BD
                 Console.WriteLine(ee.Message);
                 return new KeyValuePair<int, JugadorDTO>(4, null);
             }catch(Exception e)
             {
-                //Cualquier otra Excepción
                 Console.WriteLine(e.Message + e.StackTrace);
                 return new KeyValuePair<int, JugadorDTO>(5, null);
             }

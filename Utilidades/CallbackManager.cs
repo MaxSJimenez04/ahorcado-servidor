@@ -9,7 +9,6 @@ namespace ServidorAhorcado.Utilidades
 {
     public static class CallbackManager
     {
-        // Guarda el canal de comunicación de cada jugador por su IdJugador
         private static readonly ConcurrentDictionary<int, IPartidaCallback> _callbacks = new ConcurrentDictionary<int, IPartidaCallback>();
 
         public static void RegistrarCallback(int idJugador, IPartidaCallback callback)

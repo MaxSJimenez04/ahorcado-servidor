@@ -9,7 +9,6 @@ namespace ServidorAhorcado.Utilidades
 {
     public static class GestorPartidas
     {
-        // Guarda todas las partidas activas en memoria por su IdPartida
         private static readonly ConcurrentDictionary<int, PartidaDTO> _partidasActivas = new ConcurrentDictionary<int, PartidaDTO>();
 
         public static void AgregarPartida(int idPartida, PartidaDTO partida)

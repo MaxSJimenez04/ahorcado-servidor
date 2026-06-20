@@ -11,8 +11,6 @@ using System.Text;
 
 namespace ServidorAhorcado.Servicios
 {
-    // NOTA: puede usar el comando "Rename" del menú "Refactorizar" para cambiar el nombre de clase "PartidaService" en el código, en svc y en el archivo de configuración a la vez.
-    // NOTA: para iniciar el Cliente de prueba WCF para probar este servicio, seleccione PartidaService.svc o PartidaService.svc.cs en el Explorador de soluciones e inicie la depuración.
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.PerSession,ConcurrencyMode = ConcurrencyMode.Reentrant)]
     public class PartidaService : IPartidaService
     {
@@ -22,15 +20,12 @@ namespace ServidorAhorcado.Servicios
             {
                 var db = new AhorcadoEntities();
 
-                // Verificar que el nombre de partida no esté en uso
                 bool nombreOcupado = db.Partida.Any(p => p.NombrePartida == nombrePartida);
                 if (nombreOcupado)
                 {
-                    // Estado -1: nombre de partida ya existe
                     return -1;
                 }
 
-                // Registrar la partida en BD con EstadoId = 1 (En espera)
                 Partida nuevaPartida = new Partida
                 {
                     NombrePartida = nombrePartida,
@@ -44,7 +39,6 @@ namespace ServidorAhorcado.Servicios
                 db.Partida.Add(nuevaPartida);
                 db.SaveChanges();
 
-                // Obtener la palabra para guardarla en memoria
                 Palabra palabraDB = db.Palabra.Find(idPalabra);
                 Jugador jugadorDB = db.Jugador.Find(idJugador);
                 Categoria categoriaDB = db.Categoria.Find(palabraDB.CategoriaId);
@@ -52,7 +46,6 @@ namespace ServidorAhorcado.Servicios
                 string palabraObjetivo = idIdioma == 1 ? palabraDB.PalabraES : palabraDB.PalabraEN;
                 string descripcion = idIdioma == 1 ? palabraDB.DescripcionES : palabraDB.DescripcionEN;
 
-                // Crear el estado inicial de la partida en memoria
                 PartidaDTO partidaMemoria = new PartidaDTO
                 {
                     idPartida = nuevaPartida.IdPartida,
@@ -71,7 +64,6 @@ namespace ServidorAhorcado.Servicios
 
                 GestorPartidas.AgregarPartida(nuevaPartida.IdPartida, partidaMemoria);
 
-                // Registrar el callback del Jugador A
                 var callback = OperationContext.Current.GetCallbackChannel<IPartidaCallback>();
                 CallbackManager.RegistrarCallback(idJugador, callback);
 
@@ -163,17 +155,14 @@ namespace ServidorAhorcado.Servicios
                 partidaMemoria.usuarioJugadorB = jugadorB.Usuario;
                 partidaMemoria.estadoId = 2;
 
-                // Registrar callback del Jugador B
                 var callback = OperationContext.Current.GetCallbackChannel<IPartidaCallback>();
                 CallbackManager.RegistrarCallback(idJugador, callback);
 
-                // Notificar al Jugador A (juez) con el DTO COMPLETO (él sí ve la palabra)
                 if (CallbackManager.TryObtenerCallback(partidaMemoria.idJugadorA, out var callbackJugadorA))
                 {
                     callbackJugadorA.NotificarJugadorUnido(partidaMemoria);
                 }
 
-                // Al Jugador B se le devuelve una COPIA SIN la palabra (anti-trampa)
                 PartidaDTO partidaParaB = new PartidaDTO
                 {
                     idPartida = partidaMemoria.idPartida,
@@ -182,9 +171,9 @@ namespace ServidorAhorcado.Servicios
                     usuarioJugadorA = partidaMemoria.usuarioJugadorA,
                     idJugadorB = partidaMemoria.idJugadorB,
                     usuarioJugadorB = partidaMemoria.usuarioJugadorB,
-                    palabraObjetivo = null,                          // ← oculta para el Jugador B
-                    descripcionPalabra = partidaMemoria.descripcionPalabra, // la pista sí la ve
-                    progresoPalabra = partidaMemoria.progresoPalabra,       // los guiones vacíos
+                    palabraObjetivo = null,   
+                    descripcionPalabra = partidaMemoria.descripcionPalabra,
+                    progresoPalabra = partidaMemoria.progresoPalabra,
                     letrasUsadas = partidaMemoria.letrasUsadas,
                     intentosFallidos = partidaMemoria.intentosFallidos,
                     idIdioma = partidaMemoria.idIdioma,
@@ -215,15 +204,12 @@ namespace ServidorAhorcado.Servicios
 
                 char letraMayuscula = char.ToUpper(letra);
 
-                // Evitar letras ya usadas
                 if (partida.letrasUsadas.Contains(letraMayuscula))
                     return;
 
-                // Evitar proponer otra mientras una está en juicio
                 if (partida.hayLetraPendiente)
                     return;
 
-                // Guardar la letra como pendiente y avisar SOLO al juez (Jugador A)
                 partida.letraPendiente = letraMayuscula;
                 partida.hayLetraPendiente = true;
 
@@ -245,16 +231,12 @@ namespace ServidorAhorcado.Servicios
                 if (!GestorPartidas.TryObtenerPartida(idPartida, out PartidaDTO partida))
                     return;
 
-                // Si la partida está En espera (nadie se ha unido), solo se cancela sin penalización
                 if (partida.estadoId == 1)
                 {
                     CancelarPartidaEnEspera(idPartida, partida);
                     return;
                 }
 
-                // Partida en curso: sí aplica penalización
-                // Estado 5: abandonó el creador (JugadorA)
-                // Estado 6: abandonó el adivinador (JugadorB)
                 int estadoFinal = idJugador == partida.idJugadorA ? 5 : 6;
 
                 FinalizarPartida(idPartida, partida, estadoFinal);
@@ -278,7 +260,6 @@ namespace ServidorAhorcado.Servicios
                     db.SaveChanges();
                 }
 
-                // Limpiar callback y memoria
                 CallbackManager.EliminarCallback(partida.idJugadorA);
                 GestorPartidas.EliminarPartida(idPartida);
             }
@@ -295,11 +276,10 @@ namespace ServidorAhorcado.Servicios
                 if (!GestorPartidas.TryObtenerPartida(idPartida, out PartidaDTO partida))
                     return;
 
-                // Solo el Jugador A (juez) puede juzgar
                 if (idJugador != partida.idJugadorA)
                     return;
 
-                // Debe haber una letra esperando veredicto
+
                 if (!partida.hayLetraPendiente)
                     return;
 
@@ -307,18 +287,16 @@ namespace ServidorAhorcado.Servicios
                 string palabraUpper = partida.palabraObjetivo.ToUpper();
                 bool esRealmenteCorrecta = palabraUpper.Contains(letra);
 
-                // ANTI-TRAMPA: el servidor valida el veredicto del juez
                 if (decisionEsCorrecta != esRealmenteCorrecta)
                 {
-                    // El juez se equivocó: avisarle SOLO a él y NO avanzar
+
                     if (CallbackManager.TryObtenerCallback(partida.idJugadorA, out var cbError))
                     {
                         cbError.NotificarErrorJuicio(letra, esRealmenteCorrecta);
                     }
-                    return; // la letra sigue pendiente para que vuelva a juzgar
+                    return;
                 }
 
-                // El veredicto fue correcto: ahora sí se procesa la letra
                 partida.letrasUsadas.Add(letra);
 
                 if (esRealmenteCorrecta)
@@ -334,14 +312,11 @@ namespace ServidorAhorcado.Servicios
                     partida.intentosFallidos++;
                 }
 
-                // Limpiar la letra pendiente
                 partida.hayLetraPendiente = false;
                 partida.letraPendiente = '\0';
 
-                // Ahora sí notificar a AMBOS el resultado confirmado
                 NotificarAmbos(partida, letra, esRealmenteCorrecta);
 
-                // Verificar condiciones de fin
                 bool palabraCompleta = !partida.progresoPalabra.Contains('_');
                 bool ahorcadoCompleto = partida.intentosFallidos >= 6;
 
@@ -356,10 +331,6 @@ namespace ServidorAhorcado.Servicios
                 Console.WriteLine(e.Message);
             }
         }
-
-        // =====================
-        // Métodos privados
-        // =====================
 
         private void NotificarAmbos(PartidaDTO partida, char letra, bool esCorrecta)
         {
@@ -386,22 +357,21 @@ namespace ServidorAhorcado.Servicios
                     partidaDB.EstadoId = estadoFinal;
                     partidaDB.FechaFin = DateTime.Now;
 
-                    // Actualizar puntos según el resultado
                     Jugador jugadorA = db.Jugador.Find(partida.idJugadorA);
                     Jugador jugadorB = db.Jugador.Find(partida.idJugadorB);
 
                     switch (estadoFinal)
                     {
-                        case 3: // Ganó el adivinador (JugadorB)
+                        case 3:
                             jugadorB.Puntos += 10;
                             break;
-                        case 4: // Ganó el creador (JugadorA)
+                        case 4:
                             jugadorA.Puntos += 5;
                             break;
-                        case 5: // Abandonó el creador (JugadorA)
+                        case 5:
                             jugadorA.Puntos -= 3;
                             break;
-                        case 6: // Abandonó el adivinador (JugadorB)
+                        case 6:
                             jugadorB.Puntos -= 3;
                             break;
                     }
@@ -409,7 +379,6 @@ namespace ServidorAhorcado.Servicios
                     db.SaveChanges();
                 }
 
-                // Notificar a ambos jugadores el fin de la partida
                 if (CallbackManager.TryObtenerCallback(partida.idJugadorA, out var cbA))
                 {
                     cbA.NotificarFinPartida(estadoFinal);
@@ -422,7 +391,6 @@ namespace ServidorAhorcado.Servicios
                     CallbackManager.EliminarCallback(partida.idJugadorB);
                 }
 
-                // Limpiar la partida de memoria
                 GestorPartidas.EliminarPartida(idPartida);
             }
             catch (Exception e)
