@@ -1,0 +1,68 @@
+CREATE DATABASE ahorcado_juego;
+GO
+CREATE LOGIN ahorcado_admin WITH PASSWORD = 'ProyectoTecno@2026';
+GO
+USE ahorcado_juego;
+GO
+CREATE USER ahorcado_admin FOR LOGIN ahorcado_admin;
+GO
+ALTER ROLE db_datareader ADD MEMBER ahorcado_admin;
+ALTER ROLE db_datawriter ADD MEMBER ahorcado_admin;
+ALTER ROLE db_ddladmin ADD MEMBER ahorcado_admin;
+GO
+CREATE TABLE Jugador(
+	IdJugador int NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	Nombre varchar(255) NOT NULL,
+	PrimerApellido varchar(255) NOT NULL,
+	SegundoApellido varchar(255),
+	FechaNacimiento datetime2 NOT NULL,
+	Telefono varchar(15) NOT NULL,
+	Contrasena varchar(255) NOT NULL,
+	Correo varchar(255) NOT NULL UNIQUE,
+	Puntos int NOT NULL,
+	Usuario varchar(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE Categoria(
+	IdCategoria int NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	CategoriaES nvarchar(255) NOT NULL,
+	CategoriaEN nvarchar(255) NOT NULL
+);
+
+CREATE TABLE Idioma(
+	IdIdioma int NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	NombreIdioma nvarchar(255) NOT NULL
+);
+
+CREATE TABLE Palabra(
+	IdPalabra int NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	PalabraES varchar(255) NOT NULL,
+	PalabraEN varchar(255) NOT NULL,
+	DescripcionES varchar(500) NOT NULL,
+	DescripcionEN varchar(500) NOT NULL,
+	CategoriaId int, 
+	CONSTRAINT fk_Categoria FOREIGN KEY(CategoriaId) REFERENCES Categoria(IdCategoria)
+);
+
+CREATE TABLE Estado(
+	IdEstado int NOT NULL PRIMARY KEY,
+	EstadoES varchar(255),
+	EstadoEN varchar(255),
+);
+
+CREATE TABLE Partida(
+	IdPartida int NOT NULL IDENTITY(1,1) PRIMARY KEY,
+	NombrePartida varchar(255) NOT NULL UNIQUE,
+	FechaCreacion datetime2,
+	FechaFin datetime2,	
+	EstadoId int NOT NULL,
+	JugadorAId int NOT NULL,
+	JugadorBId int,
+	PalabraId int,
+	IdiomaId int,
+	CONSTRAINT fk_Estado FOREIGN KEY(EstadoId) REFERENCES Estado(IdEstado),
+	CONSTRAINT fk_JugadorA FOREIGN KEY(JugadorAId) REFERENCES Jugador(IdJugador),
+	CONSTRAINT fk_JugadorB FOREIGN KEY(JugadorBId) REFERENCES Jugador(IdJugador),
+	CONSTRAINT fk_PalabraId FOREIGN KEY(PalabraId) REFERENCES Palabra(IdPalabra),
+	CONSTRAINT fk_Idioma FOREIGN KEY(IdiomaId) REFERENCES Idioma(IdIdioma)
+);
